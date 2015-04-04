@@ -28,18 +28,6 @@ SIGNATURE = 'signature'
 
 PARAM_FILE = "param.txt"
 
-def xgcd(a,b):
-	u = (1,0)
-	v = (0,1)
-	while b!= 0:
-		q, r= divmod(a,b)
-		a=b
-		b=r
-		tmp=(u[0]-q*v[0], u[1] -q*v[1])
-		u=v
-		v=tmp
-	return a,u[0],u[1]
-
 
 def save_param(param_dict):
 	param = open(PARAM_FILE, 'w')
