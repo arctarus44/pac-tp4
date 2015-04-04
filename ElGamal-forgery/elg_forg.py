@@ -43,6 +43,7 @@ def xgcd(a,b):
 
 def save_param(param_dict):
 	param = open(PARAM_FILE, 'w')
+	print("Saving parameters in file.")
 	param.write("[{0}]\n".format(PARAM))
 	for key in param_dict.keys():
 		param.write(key + "=" + str(param_dict[key]) + "\n")
@@ -52,6 +53,7 @@ def compute_param(p, q):
 	"""Compute the parameters needed to forge a new Elgamal signature.
 	Return a tuple a value (b, c)"""
 	if os.path.exists(PARAM_FILE):
+		print("Parameters file exists. Extracting parameters from file.")
 		import configparser as cp
 		config = cp.ConfigParser()
 		config.read(PARAM_FILE)
@@ -64,7 +66,7 @@ def compute_param(p, q):
 		while gcd(c, q) != 1:
 			i += 1
 			c = rnd.randint(0,p)
-			print(str(i) + " Generate a new c")
+			print("Generation of a new c attemp ", str(i))
 		save_param({B : b, C : c})
 		return b, c
 
@@ -81,10 +83,10 @@ def forge_sign(p, g, h):
 	s = (-r * modinv(c, q)) % q
 
 	m = (b*s) % q
-	if check_sign(p, g, h, r, s, m):
+	if check_sign(p, g, h, r, s, m): # Check if the signature is correct
 		return {M : m, SIGNATURE : (r, s)}
-	else:
-		print("Bad signature")
+	else:						# The signature are not correct
+		print("Bad signature. :-(\nGoodbye.")
 		exit(1)
 
 
@@ -100,15 +102,12 @@ def get_pubkey():
 
 if __name__ == "__main__":
 	p, g, h = get_pubkey()
-	print(p)
-	print(g)
-	print(h)
 
 	sign = forge_sign(p, g, h)
 
 	srv = clt.Server(BASE_URL)
 	try:
 		result = srv.query(VERIFY_URL, sign)
-		print(result)
+		print(result[STATUS])
 	except clt.ServerError as err:
 		print_serverError_exit(err)

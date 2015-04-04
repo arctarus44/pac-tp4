@@ -2,6 +2,7 @@ NAME = "/dewarumez"
 BASE_URL = "http://pac.bouillaguet.info/TP4"
 
 AFF_ERROR = "Error no {0} : {1}"
+STATUS = 'status'
 
 def print_serverError_exit(err):
 	print(AFF_ERROR.format(err.code, err.msg))
