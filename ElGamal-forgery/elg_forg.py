@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.getcwd(), '..',))
 import client as clt
 import random as rnd
 from tools import *
+from fractions import gcd
 
 PARAM = "Param"
 
@@ -60,24 +61,31 @@ def compute_param(p, q):
 		c = rnd.randint(0,p)
 
 		i = 0
-		while xgcd(c, q) != 1:
+		while gcd(c, q) != 1:
 			i += 1
 			c = rnd.randint(0,p)
 			print(str(i) + " Generate a new c")
 		save_param({B : b, C : c})
 		return b, c
 
+def check_sign(p, g, h, r, s, m):
+	value = (pow(h, r, p) * pow(r, s, p)) % p
+	return value == pow(g, m, p);
+
 def forge_sign(p, g, h):
 	q = p - 1
 
 	b, c = compute_param(p, q)
 
-	r = (pow(g, b, q) * pow(h, c, q)) % p
-
+	r = (pow(g, b, p) * pow(h, c, p)) % p
 	s = (-r * modinv(c, q)) % q
 
 	m = (b*s) % q
-	return {M : m, SIGNATURE : (r, s)}
+	if check_sign(p, g, h, r, s, m):
+		return {M : m, SIGNATURE : (r, s)}
+	else:
+		print("Bad signature")
+		exit(1)
 
 
 def get_pubkey():
@@ -92,6 +100,9 @@ def get_pubkey():
 
 if __name__ == "__main__":
 	p, g, h = get_pubkey()
+	print(p)
+	print(g)
+	print(h)
 
 	sign = forge_sign(p, g, h)
 
