@@ -1,2 +1,2 @@
 # PAC-TP4
-Math + crypto = headache
+Math + crypto = ~~fun~~ headache
