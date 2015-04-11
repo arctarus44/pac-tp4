@@ -54,7 +54,7 @@ class Elgamal:
 	def decrypt(self, a, m):
 		"""Decrypt a encrypted message m. This method does not check if the
 		result are consistent."""
-		if x == None:
+		if self.__x == None:
 			raise ElgamalError(self.__X_NOT_SET)
 		h = pow(a, x, p)
 		h_inv = modinv(h, p)
@@ -96,3 +96,5 @@ class Elgamal:
 		g_m = pow(self.__g, m, self.__p)
 
 		return g_m == (pow(self.__h, r, self.__p) * pow(r, s, self.__p)) % self.__p
+
+	@staticmethod
