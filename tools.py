@@ -1,4 +1,5 @@
 from fractions import gcd
+import random
 
 NAME = "/dewarumez"
 BASE_URL = "http://pac.bouillaguet.info/TP4"
@@ -67,9 +68,9 @@ class Elgamal:
 		"""
 		if not type(m) is int:
 			raise TypeError()
-		y = random.randint(1, p-1)
-		enc_m = m * pow(h, y, p)
-		return (pow(g, y, p), enc_m)
+		y = random.randint(1, self.__p -1)
+		enc_m = m * pow(self.__h, y, self.__p)
+		return (pow(self.__g, y, self.__p), enc_m)
 
 	def sign(self, m):
 		"""Generate a signature for the message m. Return the result as a
@@ -96,5 +97,3 @@ class Elgamal:
 		g_m = pow(self.__g, m, self.__p)
 
 		return g_m == (pow(self.__h, r, self.__p) * pow(r, s, self.__p)) % self.__p
-
-	@staticmethod
