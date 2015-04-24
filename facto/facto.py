@@ -4,6 +4,7 @@ import os.path
 sys.path.append(os.path.join(os.getcwd(), '..',))
 import client as clt
 import math
+import atexit
 from tools import *
 
 CLS_AA = 'A+'
@@ -24,6 +25,9 @@ SUBMIT_URL = CHALLENGE_NAME + "/submit" + NAME
 ID = 'id'
 N = 'n'
 FACTORS = "factors"
+
+primes_list = []
+new_prime = []
 
 
 def get_number(cls, lvl):
@@ -48,8 +52,10 @@ def isPrime(a):
 def est_premier(p):
 	if(p == 1):
 		return False
-	if(p % 2 == 0):
+	if(p == 2):
 		return True
+	if(p % 2 == 0):
+		return False
 
 	sqr = math.sqrt(p)
 	cpt = 3
@@ -60,21 +66,56 @@ def est_premier(p):
 
 	return True
 
+def read_prime_file():
+	global primes_list
+	file = open("primes.txt", 'r')
+	line = file.readline()
+	while line != '':
+		primes_list.append(int(line))
+		line = file.readline()
+	file.close()
+
+def save_prime():
+	global new_prime
+	print("save prime number found")
+	file = open("primes.txt", 'a')
+	for prime in new_prime:
+		file.write(str(prime) + "\n")
+	file.close()
+
 def dividy_by_Simple(number):
+	global primes_list
+	global new_prime
 	numbers = []
 	count = 0
+	print("use compute prime number")
+	for prime in primes_list:
+		if (number % prime)  == 0:
+			count += 1
+			print(str(count) + " number " + str(number) + " -> " + str(prime), file=sys.stderr)
+			# os.system("notify-send \"no " + str(count) + " prime factor found : " + str(prime) + "\"")
+			numbers.append(prime)
+			number = number // prime
+			if number == 1:
+				return numbers
+
+	print("***** " + str(count) + " prime number used")
 
 	while number != 1:
-		i = 2
+		if len(primes_list) == 0:
+			i = 2
+		else:
+			i = primes_list[-1]
 		sqrt_number = math.sqrt(number)
 		done = False
-		print(str(count) + " number " + str(number), file=sys.stderr)
 		while not done and i <= number:
 			if est_premier(i):
+				new_prime.append(i)
 				print(i)
 				if (number % i)  == 0:
 					count += 1
-					os.system("notify-send \"no " + str(count) + " prime factor found : " + str(i) + "\"")
+					print(str(count) + " number " + str(number) + " -> " + str(i), file=sys.stderr)
+					# os.system("notify-send \"no " + str(count) + " prime factor found : " + str(i) + "\"")
 					numbers.append(i)
 					number = number // i
 					done = True
@@ -82,10 +123,14 @@ def dividy_by_Simple(number):
 				i+=1
 			else:
 				i+=2
-
 	return numbers
 
 if __name__ == "__main__":
+
+	atexit.register(save_prime)
+
+	print("Reading prime number from file")
+	read_prime_file()
 	print("Retreive number to factorize")
 	response = get_number(CLS_D, LVL_2)
 	id = response[ID]
