@@ -50,11 +50,20 @@ def isPrime(a):
 	return x
 
 def est_premier(p):
-	if(p == 1):
+	if p == 1:
 		return False
-	if(p == 2):
+	if p == 2:
 		return True
-	if(p % 2 == 0):
+	if p % 2 == 0:
+		return False
+	if p % 10 == 5:
+		return False
+
+	p_str = str(p)
+	sum_digits = 0
+	for digit_str in p_str:
+		sum_digits += int(digit_str)
+	if sum_digits % 3 == 0:
 		return False
 
 	sqr = math.sqrt(p)
@@ -84,38 +93,47 @@ def save_prime():
 	file.close()
 
 def dividy_by_Simple(number):
+	pass
+
+	# Refaire l'algo pour n'avoir qu'une seule boucle. Si on trouve un premier diviseur que l'on vient de calculer, il faut recommencer avec la liste de premier stocké.
 	global primes_list
 	global new_prime
-	numbers = []
-	count = 0
-	print("use compute prime number")
-	for prime in primes_list:
-		if (number % prime)  == 0:
-			count += 1
-			print(str(count) + " number " + str(number) + " -> " + str(prime), file=sys.stderr)
-			# os.system("notify-send \"no " + str(count) + " prime factor found : " + str(prime) + "\"")
-			numbers.append(prime)
-			number = number // prime
-			if number == 1:
-				return numbers
 
-	print("***** " + str(count) + " prime number used")
+	numbers = []
+
+	print("using compute prime number")
 
 	while number != 1:
-		if len(primes_list) == 0:
+		print("************\nnew round\n************\n", file=sys.stderr)
+		found = False
+		for prime in primes_list:
+			print("# " + str(prime), file=sys.stderr)
+
+			if (number % prime) == 0:
+				numbers.append(prime)
+				print("number " + str(number) + " -> " + str(prime))
+				found = True
+				number = number // prime
+				break
+
+		if found:
+			print("Prime de la liste utilisé, retour au debut de la grd boucle", file=sys.stderr)
+			continue
+
+		if len(primes_list) == 0: # pas encore de premier calculé
 			i = 2
-		else:
-			i = primes_list[-1]
-		sqrt_number = math.sqrt(number)
+		else:					# On a trouvé un diviseur premier déjà calcul
+			i = primes_list[-1] + 2 # Si nombre premier -> impair donc + 2 pour ne pas avoir de nombre pair
+
 		done = False
-		while not done and i <= number:
+		sqrt_number = math.sqrt(number)
+		while not done and i <= sqrt_number:
 			if est_premier(i):
+				print("new prime found : " + str(i), file=sys.stderr)
 				new_prime.append(i)
-				print(i)
-				if (number % i)  == 0:
-					count += 1
-					print(str(count) + " number " + str(number) + " -> " + str(i), file=sys.stderr)
-					# os.system("notify-send \"no " + str(count) + " prime factor found : " + str(i) + "\"")
+				if (number % i) == 0:
+					print("number " + str(number) + " -> " + str(i))
+					print("************\nnew prime divisor found\n************\n", file=sys.stderr)
 					numbers.append(i)
 					number = number // i
 					done = True
@@ -123,6 +141,7 @@ def dividy_by_Simple(number):
 				i+=1
 			else:
 				i+=2
+
 	return numbers
 
 if __name__ == "__main__":
@@ -132,20 +151,21 @@ if __name__ == "__main__":
 	print("Reading prime number from file")
 	read_prime_file()
 	print("Retreive number to factorize")
-	response = get_number(CLS_D, LVL_2)
+	response = get_number(CLS_D, LVL_1)
 	id = response[ID]
 	n = response[N]
 	print("Finding factors")
 	factors = dividy_by_Simple(n)
+
 	save = open("./factors", 'w')
 	save.write(str(factors))
 	save.close()
-	print(factors)
+
 	result = {ID: id, FACTORS: factors}
 	srv = clt.Server(BASE_URL)
+
 	try:
 		result = srv.query(SUBMIT_URL, result)
+		print(result)
 	except ServerError as err:
 		print_serverError_exit(err)
-
-	os.system("notify-send \"finish" + result + "\" -i ~/.face.icon" )
