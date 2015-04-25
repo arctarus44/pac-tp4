@@ -6,6 +6,7 @@ import client as clt
 import math
 import atexit
 from tools import *
+import signal
 
 CLS_AA = 'A+'
 CLS_A = 'A'
@@ -28,6 +29,8 @@ FACTORS = "factors"
 
 primes_list = []
 new_prime = []
+
+current_number = 0
 
 
 def get_number(cls, lvl):
@@ -83,6 +86,7 @@ def read_prime_file():
 		primes_list.append(int(line))
 		line = file.readline()
 	file.close()
+	print(str(len(primes_list)) + " prime numbers read")
 
 def save_prime():
 	global new_prime
@@ -90,35 +94,34 @@ def save_prime():
 	file = open("primes.txt", 'a')
 	for prime in new_prime:
 		file.write(str(prime) + "\n")
+	print(str(len(new_prime)) + " prime numbers saved")
 	file.close()
 
 def dividy_by_Simple(number):
-	pass
-
-	# Refaire l'algo pour n'avoir qu'une seule boucle. Si on trouve un premier diviseur que l'on vient de calculer, il faut recommencer avec la liste de premier stocké.
 	global primes_list
 	global new_prime
-
+	global current_number
+	count = 0
 	numbers = []
 
 	print("using compute prime number")
 
 	while number != 1:
-		print("************\nnew round\n************\n", file=sys.stderr)
 		found = False
 		for prime in primes_list:
-			print("# " + str(prime), file=sys.stderr)
-
+			current_number = prime
 			if (number % prime) == 0:
 				numbers.append(prime)
-				print("number " + str(number) + " -> " + str(prime))
+				count+=1
+				print(str(count) + " number " + str(number) + " -> " + str(prime))
 				found = True
 				number = number // prime
 				break
 
 		if found:
-			print("Prime de la liste utilisé, retour au debut de la grd boucle", file=sys.stderr)
 			continue
+
+		print("Fin de la liste de premier précalculé")
 
 		if len(primes_list) == 0: # pas encore de premier calculé
 			i = 2
@@ -128,12 +131,12 @@ def dividy_by_Simple(number):
 		done = False
 		sqrt_number = math.sqrt(number)
 		while not done and i <= sqrt_number:
+			current_number = i
 			if est_premier(i):
-				print("new prime found : " + str(i), file=sys.stderr)
 				new_prime.append(i)
 				if (number % i) == 0:
-					print("number " + str(number) + " -> " + str(i))
-					print("************\nnew prime divisor found\n************\n", file=sys.stderr)
+					count+=1
+					print(str(count) + " number " + str(number) + " -> " + str(i))
 					numbers.append(i)
 					number = number // i
 					done = True
@@ -144,20 +147,25 @@ def dividy_by_Simple(number):
 
 	return numbers
 
+def print_current_number(signum, frame):
+	print("current number : " + str(current_number))
+
 if __name__ == "__main__":
 
 	atexit.register(save_prime)
 
+	signal.signal(signal.SIGUSR1, print_current_number)
+
 	print("Reading prime number from file")
 	read_prime_file()
 	print("Retreive number to factorize")
-	response = get_number(CLS_D, LVL_1)
+	response = get_number(CLS_D, LVL_2)
 	id = response[ID]
 	n = response[N]
 	print("Finding factors")
 	factors = dividy_by_Simple(n)
 
-	save = open("./factors", 'w')
+	save = open("./factors.txt", 'w')
 	save.write(str(factors))
 	save.close()
 
